@@ -5,7 +5,7 @@ import { Product } from "@/lib/types";
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Readonly<{ id: string }> }
 ) {
   const token = req.cookies.get("auth_token")?.value;
   const user = token ? verifyToken(token) : null;
