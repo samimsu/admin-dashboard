@@ -5,7 +5,7 @@ import { Product } from "@/lib/types";
 
 export async function PUT(
   req: NextRequest,
-  { params }: { params: Readonly<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const token = req.cookies.get("auth_token")?.value;
   const user = token ? verifyToken(token) : null;
@@ -14,7 +14,7 @@ export async function PUT(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { id } = params;
+  const { id } = await params;
   const products = getProducts();
   const existingProduct = products.find((p) => p.id === id);
   if (!existingProduct) {
@@ -42,7 +42,7 @@ export async function PUT(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const token = req.cookies.get("auth_token")?.value;
   const user = token ? verifyToken(token) : null;
@@ -51,7 +51,7 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { id } = params;
+  const { id } = await params;
   const products = getProducts();
   if (!products.find((p) => p.id === id)) {
     return NextResponse.json({ error: "Product not found" }, { status: 404 });

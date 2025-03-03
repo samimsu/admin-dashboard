@@ -68,12 +68,14 @@ export default function Navbar() {
             <DropdownMenuItem
               onClick={() => router.push("/dashboard/profile")}
               className="cursor-pointer hover:bg-blue-100"
+              disabled
             >
               Profile
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => router.push("/dashboard/settings")}
               className="cursor-pointer hover:bg-blue-100"
+              disabled
             >
               Settings
             </DropdownMenuItem>

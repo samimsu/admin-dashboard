@@ -33,15 +33,17 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { useAppStore } from "../lib/store";
-import { Check, CircleX, Pencil, Save, Trash2, X } from "lucide-react";
+import { Check, Pencil, Trash2, X } from "lucide-react";
 
-interface ProductListProps {
-  filter: string;
-}
+type FilterState = {
+  name: string;
+  minPrice: string;
+  maxPrice: string;
+  discount: "all" | "yes" | "no";
+  saleStatus: "all" | "active" | "ended" | "upcoming";
+};
 
-export default function ProductList({
-  filter: initialFilter,
-}: ProductListProps) {
+export default function ProductList() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const {
@@ -178,22 +180,22 @@ export default function ProductList({
       saleEnd: editForm.saleEnd,
     };
 
-    if (!updates.name.trim()) {
+    if (!updates?.name?.trim()) {
       alert("Name is required");
       return;
     }
-    if (isNaN(updates.price) || updates.price <= 0) {
+    if (isNaN(updates?.price || 0) || (updates?.price || 0) <= 0) {
       alert("Price must be a positive number");
       return;
     }
     if (
-      !isNaN(updates.discount) &&
-      (updates.discount < 0 || updates.discount > 100)
+      !isNaN(updates?.discount || 0) &&
+      ((updates?.discount || 0) < 0 || (updates?.discount || 0) > 100)
     ) {
       alert("Discount must be between 0 and 100");
       return;
     }
-    if (updates.discount > 0 && !updates.saleEnd) {
+    if ((updates?.discount || 0) > 0 && !updates.saleEnd) {
       alert("Sale end date is required for discounted products");
       return;
     }
@@ -230,9 +232,6 @@ export default function ProductList({
     setDeleteId(id);
     setIsDialogOpen(true);
   };
-
-  // Find the product to delete based on deleteId
-  const productToDelete = products.find((p) => p.id === deleteId);
 
   return (
     <div className="space-y-6">
@@ -441,8 +440,9 @@ export default function ProductList({
                             <DialogHeader>
                               <DialogTitle>Confirm Deletion</DialogTitle>
                               <DialogDescription>
-                                Are you sure you want to delete "{product.name}
-                                "? This action cannot be undone.
+                                Are you sure you want to delete &quot;
+                                {product.name}&quot;? This action cannot be
+                                undone.
                               </DialogDescription>
                             </DialogHeader>
                             <DialogFooter>

@@ -5,18 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import {
-  Home,
-  Boxes,
-  Menu,
-  Calendar,
-  FileText,
-  BarChart,
-  Users,
-  Users2,
-  Settings,
-  Headphones,
-} from "lucide-react"; // Added more icons for weihu links
+import { Home, Boxes, Menu } from "lucide-react"; // Added more icons for weihu links
 import { useAppStore } from "../lib/store";
 import { useEffect } from "react";
 

@@ -11,7 +11,7 @@ import { useAppStore } from "../../lib/store";
 
 export default function Dashboard() {
   const router = useRouter();
-  const { products, setProducts, logout } = useAppStore();
+  const { products, setProducts } = useAppStore();
 
   useEffect(() => {
     if (!products.length) {
@@ -25,12 +25,6 @@ export default function Dashboard() {
       fetchProducts();
     }
   }, [products, setProducts]);
-
-  const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    logout();
-    router.push("/login");
-  };
 
   const totalProducts = products.length;
   const productsOnSale = products.filter((p) => p.discount > 0).length;
@@ -58,7 +52,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-white flex">
       <Sidebar />
       <div className="flex-1 flex flex-col">
-        <Navbar onLogout={handleLogout} />
+        <Navbar />
         <div className="container mx-auto p-6">
           <h1 className="text-2xl font-bold text-gray-800 mb-6">Welcome!</h1>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
