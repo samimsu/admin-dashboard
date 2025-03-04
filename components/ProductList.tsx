@@ -65,19 +65,29 @@ export default function ProductList() {
   }>({ name: "", price: "", discount: "", saleEnd: "" });
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!products.length) {
-      const fetchProducts = async () => {
+    const fetchProducts = async () => {
+      if (products.length) {
+        setLoading(false);
+        return;
+      }
+      try {
+        setLoading(true);
         const res = await fetch("/api/products", { credentials: "include" });
-        if (res.ok) {
-          const data = await res.json();
-          setProducts(data);
-        }
-      };
-      fetchProducts();
-    }
-  }, [products, setProducts]);
+        if (!res.ok) throw new Error("Failed to fetch products");
+        const data = await res.json();
+        setProducts(data);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   useEffect(() => {
     const initialFilters = {
@@ -208,7 +218,8 @@ export default function ProductList() {
     });
 
     if (res.ok) {
-      updateProduct(id, updates);
+      const updatedProduct = await res.json();
+      updateProduct(id, updatedProduct);
       setEditingId(null);
       setEditForm({ name: "", price: "", discount: "", saleEnd: "" });
     }
@@ -329,7 +340,7 @@ export default function ProductList() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {products.length === 0 ? (
+            {loading ? (
               <TableRow>
                 <TableCell
                   colSpan={5}

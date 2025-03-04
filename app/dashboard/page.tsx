@@ -1,7 +1,7 @@
 // app/dashboard/page.tsx
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
@@ -12,19 +12,29 @@ import { useAppStore } from "../../lib/store";
 export default function Dashboard() {
   const router = useRouter();
   const { products, setProducts } = useAppStore();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!products.length) {
-      const fetchProducts = async () => {
+    const fetchProducts = async () => {
+      if (products.length) {
+        setLoading(false);
+        return;
+      }
+      try {
+        setLoading(true);
         const res = await fetch("/api/products", { credentials: "include" });
-        if (res.ok) {
-          const data = await res.json();
-          setProducts(data);
-        }
-      };
-      fetchProducts();
-    }
-  }, [products, setProducts]);
+        if (!res.ok) throw new Error("Failed to fetch products");
+        const data = await res.json();
+        setProducts(data);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const totalProducts = products.length;
   const productsOnSale = products.filter((p) => p.discount > 0).length;
@@ -68,7 +78,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold text-blue-500">
-                  {totalProducts}
+                  {loading ? "-" : totalProducts}
                 </p>
                 <p className="text-sm text-gray-600">
                   All products in inventory
@@ -87,7 +97,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold text-purple-500">
-                  {productsOnSale}
+                  {loading ? "-" : productsOnSale}
                 </p>
                 <p className="text-sm text-gray-600">
                   Currently discounted items
@@ -106,7 +116,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold text-orange-500">
-                  {upcomingExpirations}
+                  {loading ? "-" : upcomingExpirations}
                 </p>
                 <p className="text-sm text-gray-600">
                   Sales ending within 7 days

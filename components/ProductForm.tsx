@@ -10,9 +10,9 @@ import { useAppStore } from "../lib/store";
 export default function ProductForm() {
   // Local state with strings for input flexibility
   const [formData, setFormData] = useState({
-    name: "",
-    price: "", // String for input
-    discount: "", // String for input
+    name: "Book 1",
+    price: "100", // String for input
+    discount: "10", // String for input
     saleEnd: "",
   });
   const [errors, setErrors] = useState<
@@ -69,19 +69,15 @@ export default function ProductForm() {
         discount: formData.discount === "" ? 0 : Number(formData.discount), // Convert, default to 0
         saleEnd: formData.saleEnd,
       };
-      const productWithId = {
-        ...newProduct,
-        id: Date.now().toString(),
-        createdAt: new Date().toISOString(),
-      };
       const res = await fetch("/api/products", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(productWithId),
+        body: JSON.stringify(newProduct),
         credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to add product");
-      setProducts([...products, productWithId]);
+      const addedProduct = await res.json();
+      setProducts([...products, addedProduct]);
       setFormData({ name: "", price: "", discount: "", saleEnd: "" });
       setErrors({});
     } catch (error) {

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
-import { updateProduct, deleteProduct, getProducts } from "@/lib/db";
 import { Product } from "@/lib/types";
+import { db } from "@/lib/db";
 
 export async function PUT(
   req: NextRequest,
@@ -15,29 +15,60 @@ export async function PUT(
   }
 
   const { id } = await params;
-  const products = getProducts();
-  const existingProduct = products.find((p) => p.id === id);
-  if (!existingProduct) {
-    return NextResponse.json({ error: "Product not found" }, { status: 404 });
-  }
 
   const updates: Partial<Product> = await req.json();
-  if (updates.price && typeof updates.price !== "number") {
+
+  // Validate updates
+  if (updates.price !== undefined && typeof updates.price !== "number") {
     return NextResponse.json(
       { error: "Price must be a number" },
       { status: 400 }
     );
   }
-  if (updates.discount && typeof updates.discount !== "number") {
+  if (updates.discount !== undefined && typeof updates.discount !== "number") {
     return NextResponse.json(
       { error: "Discount must be a number" },
       { status: 400 }
     );
   }
 
-  updateProduct(id, updates);
-  const updatedProduct = { ...existingProduct, ...updates };
-  return NextResponse.json(updatedProduct, { status: 200 });
+  // Additional validation for discount (0-100)
+  if (
+    updates.discount !== undefined &&
+    (updates.discount < 0 || updates.discount > 100)
+  ) {
+    return NextResponse.json(
+      { error: "Discount must be between 0 and 100" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    // Update product in Vercel Postgres
+    const result = await db.query(
+      `UPDATE products SET name = $1, price = $2, discount = $3, "saleEnd" = $4 WHERE id = $5 RETURNING *`,
+      [
+        updates.name || null,
+        updates.price || null,
+        updates.discount || null,
+        updates.saleEnd || null,
+        id,
+      ]
+    );
+
+    if (!result.rows.length) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
+
+    const updatedProduct = result.rows[0];
+    return NextResponse.json(updatedProduct, { status: 200 });
+  } catch (error) {
+    console.error("Error updating product:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function DELETE(
@@ -52,14 +83,19 @@ export async function DELETE(
   }
 
   const { id } = await params;
-  const products = getProducts();
-  if (!products.find((p) => p.id === id)) {
-    return NextResponse.json({ error: "Product not found" }, { status: 404 });
+  try {
+    const result = await db.query("DELETE FROM products WHERE id = $1", [id]);
+    if (result.rowCount === 0) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
+    return NextResponse.json(
+      { message: "Product deleted successfully" },
+      { status: 200 }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
-
-  deleteProduct(id);
-  return NextResponse.json(
-    { message: "Product deleted successfully" },
-    { status: 200 }
-  );
 }
