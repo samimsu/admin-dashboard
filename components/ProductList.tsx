@@ -87,7 +87,7 @@ export default function ProductList() {
     };
 
     fetchProducts();
-  }, []);
+  }, [products.length, setProducts]);
 
   useEffect(() => {
     const initialFilters = {

@@ -10,9 +10,9 @@ import { useAppStore } from "../lib/store";
 export default function ProductForm() {
   // Local state with strings for input flexibility
   const [formData, setFormData] = useState({
-    name: "Book 1",
-    price: "100", // String for input
-    discount: "10", // String for input
+    name: "",
+    price: "",
+    discount: "",
     saleEnd: "",
   });
   const [errors, setErrors] = useState<

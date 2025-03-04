@@ -34,7 +34,7 @@ export default function Dashboard() {
     };
 
     fetchProducts();
-  }, []);
+  }, [products.length, setProducts]);
 
   const totalProducts = products.length;
   const productsOnSale = products.filter((p) => p.discount > 0).length;

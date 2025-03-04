@@ -10,9 +10,10 @@ export async function POST(req: NextRequest) {
     await req.json();
 
   try {
-    const result = await db.query("SELECT * FROM users WHERE email = $1", [
-      email,
-    ]);
+    const result = await db.query<Admin>(
+      "SELECT * FROM users WHERE email = $1",
+      [email]
+    );
     const admin: Admin | undefined = result.rows[0];
 
     if (!admin) {
